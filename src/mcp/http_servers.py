@@ -54,10 +54,15 @@ async def call_tool(request: ToolCallRequest):
     try:
         if request.name == "get_user_profile":
             username = request.arguments.get("username")
+            if not username:
+                return ToolCallResponse(status="error", error="Missing required parameter: username")
             result = await github_service.get_user_profile(username)
             return ToolCallResponse(status="success", data=result)
+            
         elif request.name == "search_repositories":
             query = request.arguments.get("query")
+            if not query:
+                return ToolCallResponse(status="error", error="Missing required parameter: query")
             language = request.arguments.get("language")
             sort = request.arguments.get("sort", "stars")
             result = await github_service.search_repositories(query, language, sort)
@@ -97,6 +102,8 @@ async def call_tool(request: ToolCallRequest):
     try:
         if request.name == "search_web":
             query = request.arguments.get("query")
+            if not query:
+                return ToolCallResponse(status="error", error="Missing required parameter: query")
             num_results = request.arguments.get("num_results", 3)
             result = await web_search_service.search(query, num_results)
             return ToolCallResponse(status="success", data=result)
@@ -149,14 +156,45 @@ async def call_tool(request: ToolCallRequest):
         if request.name == "read_spreadsheet":
             spreadsheet_id = request.arguments.get("spreadsheet_id")
             range_name = request.arguments.get("range_name")
+            
+            if not spreadsheet_id:
+                return ToolCallResponse(
+                    status="error", 
+                    error="Missing required parameter: spreadsheet_id"
+                )
+            if not range_name:
+                return ToolCallResponse(
+                    status="error", 
+                    error="Missing required parameter: range_name"
+                )
+                
             result = await sheets_service.read_spreadsheet(spreadsheet_id, range_name)
             return ToolCallResponse(status="success", data=result)
+            
         elif request.name == "update_spreadsheet":
             spreadsheet_id = request.arguments.get("spreadsheet_id") 
             range_name = request.arguments.get("range_name") 
             values = request.arguments.get("values")
+            
+            if not spreadsheet_id:
+                return ToolCallResponse(
+                    status="error", 
+                    error="Missing required parameter: spreadsheet_id"
+                )
+            if not range_name:
+                return ToolCallResponse(
+                    status="error", 
+                    error="Missing required parameter: range_name"
+                )
+            if not values:
+                return ToolCallResponse(
+                    status="error", 
+                    error="Missing required parameter: values"
+                )
+                
             result = await sheets_service.update_spreadsheet(spreadsheet_id, range_name, values)
             return ToolCallResponse(status="success", data=result)
+            
         else:
             return ToolCallResponse(status="error", error=f"Unknown tool: {request.name}")
     except Exception as e:

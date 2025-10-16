@@ -35,23 +35,26 @@ class GoogleSheetsService:
                 "data": data
             }
             
+        except gspread.SpreadsheetNotFound:
+            return {
+                "status": "error",
+                "message": f"Spreadsheet with ID {spreadsheet_id} not found"
+            }
+        except gspread.WorksheetNotFound:
+            return {
+                "status": "error", 
+                "message": f"Worksheet in range '{range_name}' not found"
+            }
+        except gspread.APIError as e:
+            return {
+                "status": "error",
+                "message": f"Google Sheets API error: {str(e)}"
+            }
         except Exception as e:
-            error_msg = str(e)
-            if "404" in error_msg or "not found" in error_msg.lower():
-                return {
-                    "status": "error",
-                    "message": f"Таблица с ID {spreadsheet_id} не найдена"
-                }
-            elif "403" in error_msg or "permission" in error_msg.lower():
-                return {
-                    "status": "error",
-                    "message": f"Нет доступа к таблице {spreadsheet_id}"
-                }
-            else:
-                return {
-                    "status": "error",
-                    "message": f"Ошибка Google Sheets: {error_msg}"
-                }
+            return {
+                "status": "error",
+                "message": f"Unexpected error: {str(e)}"
+            }
     
     async def update_spreadsheet(self, spreadsheet_id: str, range_name: str, values: List[List[str]]) -> Dict[str, Any]:
         try:
